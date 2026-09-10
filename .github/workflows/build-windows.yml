@@ -19,17 +19,11 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-          install: >-
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-make
+          install: mingw-w64-x86_64-gcc
 
-      - name: Show GCC version
+      - name: Build c4.exe
         shell: msys2 {0}
-        run: gcc --version
-
-      - name: Build c4
-        shell: msys2 {0}
-        run: gcc -O2 -o c4.exe c4.c
+        run: gcc -O2 -static -o c4.exe c4.c
 
       - name: Test hello world
         shell: msys2 {0}
@@ -45,10 +39,10 @@ jobs:
       - name: Test self-compile
         shell: msys2 {0}
         run: |
-          ./c4.exe c4.c c4_self.c
-          echo "self-compile passed"
+          # c4 编译自己，然后第二代编译 hello.c
+          ./c4.exe c4.c hello.c
 
-      - name: Upload artifact
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: c4-windows-x64
