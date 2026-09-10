@@ -1,0 +1,55 @@
+name: Build c4 for Windows
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+
+      - name: Show GCC version
+        shell: msys2 {0}
+        run: gcc --version
+
+      - name: Build c4
+        shell: msys2 {0}
+        run: gcc -O2 -o c4.exe c4.c
+
+      - name: Test hello world
+        shell: msys2 {0}
+        run: |
+          cat > hello.c << 'EOF'
+          int main() {
+              printf("hello, world\n");
+              return 0;
+          }
+          EOF
+          ./c4.exe hello.c
+
+      - name: Test self-compile
+        shell: msys2 {0}
+        run: |
+          ./c4.exe c4.c c4_self.c
+          echo "self-compile passed"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: c4-windows-x64
+          path: c4.exe
